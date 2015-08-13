@@ -1,0 +1,98 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'idea'
+
+mainClassName = "Teste1"
+version = '1.0.0'
+group = 'br.com.geocontrol'
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+//    compile 'org.codehaus.groovy:groovy-all:2.4.3'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile 'com.googlecode.aima-java:aima-core:0.11.1'
+    compile 'com.vividsolutions:jts:1.11'
+}
+
+task mkdirs() {
+    doLast {
+        sourceSets.each { ss ->
+            ss.allSource.srcDirs.each {
+                if (!it.exists()) {
+                    logger.lifecycle "Creating directory ${it}"
+                    it.mkdirs()
+                } else {
+                    logger.lifecycle "Directory ${it} already exists"
+                }
+            }
+        }
+    }
+}
+
+task copyLibs(type: Copy) {
+    from configurations.runtime
+    into "${buildDir}/libs/lib"
+}
+
+task dist(type: Jar) {
+//    dependsOn clean
+    dependsOn jar
+    dependsOn copyLibs
+    from files(sourceSets.main.output.classesDir)
+    from sourceSets.main.resources
+    manifest {
+        def manifestClasspath = configurations.runtime.collect { "lib/${it.getName()}" }.join(' ')
+        attributes 'Main-Class': mainClassName
+        attributes 'Class-Path': manifestClasspath
+    }
+}
+
+task jarWithDependencies(type: Jar) {
+    manifest {
+        attributes(
+                'Implementation-Version': version,
+                'Main-Class': mainClassName
+        )
+    }
+    baseName = project.name
+    from { configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+
+task(console, dependsOn: 'classes', type: JavaExec) {
+    main = 'groovy.ui.Console'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+task gConsole() {
+    doLast {
+        def console = new groovy.ui.Console(new Binding(gradle: this, config: configurations, sourceSets: sourceSets))
+        console.run()
+        System.in.read()
+    }
+}
+
+run {
+    /* Can pass all the properties: */
+    systemProperties System.getProperties()
+
+    /* Or just each by name: */
+//    systemProperty "myvariable", System.getProperty("myvariable")
+
+    /* Need to split the space-delimited value in the exec.args */
+//    args System.getProperty("exec.args").split()
+    File runArgsFile = new File('run-args')
+    if (runArgsFile.exists()) {
+        List<String> runArgs = Eval.me(runArgsFile.text)
+        args(runArgs as String[])
+    }
+}
