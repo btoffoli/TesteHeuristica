@@ -12,5 +12,5 @@ public class Onibus {
     public String nome;
     public Point ultimaPosicao;
     //TODO talvez fosse interessante utilizar a distancia total p/ fazer parte do modelo do problema, avaliar...
-    public long kmMortoPercorrido = 0;
+    public double kmMortoPercorrido = 0;
 }

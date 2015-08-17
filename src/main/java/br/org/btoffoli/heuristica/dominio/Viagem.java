@@ -14,12 +14,6 @@ public class Viagem {
     public Date dataHoraInicial;
     public Date dataHoraFinal;
 
-    private Onibus onibus;
-    private void associarOnibus(Onibus onibus) {
-        if (onibus == null) {
-            this.onibus = onibus;
-            onibus.viagemSet.add(this);
-            onibus.ultimaPosicao = this.pontoFinal;
-        }
-    }
+    public Onibus onibus;
+
 }
