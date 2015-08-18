@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by bruno on 11/08/15.
  */
-public class Viagem {
+public class Viagem implements Cloneable {
     public Point pontoInicio;
     public Point pontoFinal;
 
